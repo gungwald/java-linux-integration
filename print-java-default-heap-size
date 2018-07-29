@@ -1,0 +1,9 @@
+#!/bin/sh
+if java -XX:+PrintFlagsFinal -version 2> /dev/null
+then
+    :
+else
+    echo That didn\'t work. Running it again to get the stderr. >&2
+    java -XX:+PrintFlagsFinal -version
+fi | grep HeapSize
+

@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# Starts an application jar file which is named the same as this script,
+# with an optional version number: scriptname.jar or scriptname-1.0.jar.
+# A search is done for the jar using likely locations, starting with
+# the same directory that this script is in.
+
+# This does not use any external commands because I'm also using it with
+# bash.exe on Windows.
+
+APP_NAME=`basename "$0"`
+SAME_DIR=`dirname "$0"`
+
+if [ "$SAME_DIR" = '.' ]
+then
+    SAME_DIR=`pwd`
+fi
+
+# DO NOT try to put the search directories in a variable first because
+# then any space inside an individual directory will cause the directory
+# to get split into separate words. Putting the list in the "for" loop
+# allows the spaces in directory names to be preserved with the double-quotes
+# around each variable. You don't want to mess with changing the IFS
+# variable either because that makes it hard to do nested looping.
+# This list, along with the "break" also establishes a priority.
+unset APP_JAR
+for SEARCH_DIR in "$SAME_DIR" `dirname "$SAME_DIR"`/lib "$HOME"/git/"$APP_NAME"/build/libs "$HOME"/lib "$HOME"/Dropbox/lib
+do
+    # The following works for paths with spaces because word splitting is done
+    # before path expansion.
+    for JAR in "$SEARCH_DIR"/$APP_NAME.jar "$SEARCH_DIR"/$APP_NAME-*.jar
+    do
+        if [ -f "$JAR" ]
+        then
+            # Don't break here because we want to get the higest version jar file.
+            APP_JAR="$JAR"
+        fi
+    done
+
+    # Stop searching if we found the highest version in this SEARCH_DIR.
+    if [ -n "$APP_JAR" ]
+    then
+        break
+    fi
+done
+
+# Check for failure to find the application jar.
+if [ -z "$APP_JAR" ]
+then
+    echo $0: The application jar file was not found in any known location. >&2
+    exit 1
+fi
+
+if [ `uname` = 'Darwin' ]
+then
+    # This is a command line application so stop Java coffee cup icon 
+    # from appearing in the dock on MacOS.
+    # Older versions of MacOS X require this:
+    SYSTEM_PROPS='-Djava.awt.headless=true'
+    # Newer versions (also?) require this:
+    SYSTEM_PROPS="$SYSTEM_PROPS -Dapple.awt.UIElement=true"
+else
+    SYSTEM_PROPS=''
+fi
+
+exec java $SYSTEM_PROPS -jar "$APP_JAR" "$@"
+

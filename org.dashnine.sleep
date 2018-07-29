@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Determine the location of this script.
+BIN_DIR=`dirname "$0"`
+if [ "$BIN_DIR" = "." ]
+then
+    BIN_DIR=`pwd`
+fi
+
+# Determine top of UNIX-like directory hierarchy.
+TOP_DIR=`dirname "$BIN_DIR"`
+
+# Look for sleep.jar.
+unset SLEEP_JAR
+for SLEEP_JAR_DIR in '.' "$BIN_DIR" "$TOP_DIR"/share/java "$TOP_DIR"/lib /usr/share/java `dirname "$1"` 
+do
+    if [ -f "$SLEEP_JAR_DIR"/sleep.jar ]
+    then
+        SLEEP_JAR="$SLEEP_JAR_DIR"/sleep.jar
+        break
+    fi
+done
+
+# Check if sleep.jar not found.
+if [ -z "$SLEEP_JAR" ]
+then
+    echo $0: Required file sleep.jar could not be found. >&2
+    exit 1
+fi
+
+# Finally run the application.
+exec java -jar "$SLEEP_JAR" "$@"
+

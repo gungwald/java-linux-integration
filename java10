@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/lib/jvm/jre-10/bin/java "$@"

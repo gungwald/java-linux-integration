@@ -1,0 +1,37 @@
+#!/bin/sh
+
+BIN_DIR=`dirname "$0"`
+MY_NAME=`basename "$0"`
+SCRIPT="$MY_NAME".sl
+
+if [ "$BIN_DIR" = '.' ]
+then
+    BIN_DIR=`pwd`
+fi
+
+if [ -f "$BIN_DIR/sleep.jar" -a -f "$BIN_DIR"/"$SCRIPT" ]
+then
+    # All files are in the same directory.
+    TOP_DIR="$BIN_DIR"
+    LIB_DIR="$BIN_DIR"
+    SCRIPTS_DIR="$BIN_DIR"
+else
+    # Files are separated into bin, lib, and scripts directories.
+    TOP_DIR=`dirname "$BIN_DIR"`
+    LIB_DIR="$TOP_DIR"/lib
+    SCRIPTS_DIR="$TOP_DIR"/scripts
+fi
+
+if [ `uname` = 'Darwin' ]
+then
+    # Stop Java coffee cup icon from appearing in the dock on MacOS.
+    # Older versions of MacOS X require this:
+    SYSTEM_PROPS='-Djava.awt.headless=true'
+    # Newer versions (also?) require this:
+    SYSTEM_PROPS="$SYSTEM_PROPS -Dapple.awt.UIElement=true"
+else
+    SYSTEM_PROPS=''
+fi
+
+exec java $SYSTEM_PROPS -jar "$LIB_DIR"/sleep.jar "$SCRIPTS_DIR"/"$SCRIPT" "$@"
+

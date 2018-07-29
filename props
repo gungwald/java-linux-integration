@@ -1,0 +1,4 @@
+#!/usr/bin/env org-dashnine-sleep
+foreach $key => $value (systemProperties()) {
+	println("$key = $value");
+}
